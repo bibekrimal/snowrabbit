@@ -1,2 +1,2 @@
-# askalice
-Ask Alice looking glass network app
+# Snow Rabbit
+Snow Rabbit looking glass network app
