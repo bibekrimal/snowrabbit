@@ -13,10 +13,7 @@ RUN apt-get -y install rsyslog vim
 RUN gem install sinatra
 RUN gem install sqlite3
 RUN gem install net-ping
-
-COPY cron/probe-cron /etc/cron.d
+RUN gem install mixlib-shellout
 
 WORKDIR /app
-#CMD /app/entrypoint.sh
-#CMD ["/usr/sbin/cron", "-f", "-L15"]
-CMD /app/probe-cron.rb
+CMD /app/probe.rb

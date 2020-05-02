@@ -1,10 +1,10 @@
 [Unit]
-Description=Snowrabbit Worker
+Description=Snowrabbit Probe
 After=docker.service
 Requires=docker.service
 
 [Service]
-ExecStart=/opt/bin/systemd-docker run --rm --name snowrabbit-worker snowrabbit-worker
+ExecStart=/opt/bin/systemd-docker run --rm --name snowrabbit-probe snowrabbit-probe
 Restart=always
 RestartSec=10s
 Type=notify
