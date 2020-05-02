@@ -3,17 +3,17 @@
 case $1 in
   build)
     echo "BUILD"
-    docker build -t snowrabbit-master .
+    docker build -t snowrabbit-worker .
     ;;
 
   run)
     echo "RUN"
-    docker run --name snowrabbit-master -d --rm -p 8008:4567 snowrabbit-master
+    docker run --name snowrabbit-worker -d --rm -p 8009:4567 snowrabbit-worker
     ;;
 
   stop)
     echo "STOP"
-    docker stop snowrabbit-master
+    docker stop snowrabbit-worker
     ;;
 
   restart)

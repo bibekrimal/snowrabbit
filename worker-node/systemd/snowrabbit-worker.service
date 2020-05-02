@@ -1,0 +1,16 @@
+[Unit]
+Description=Snowrabbit Worker
+After=docker.service
+Requires=docker.service
+
+[Service]
+ExecStart=/opt/bin/systemd-docker run --rm --name snowrabbit-worker snowrabbit-worker
+Restart=always
+RestartSec=10s
+Type=notify
+NotifyAccess=all
+TimeoutStartSec=120
+TimeoutStopSec=15
+
+[Install]
+WantedBy=multi-user.target
