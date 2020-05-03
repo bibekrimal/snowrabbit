@@ -3,15 +3,40 @@
 # This script runs once every few mins and pings all probe nodes
 $stdout.sync = true
 require 'net/ping'
+require 'net/http'
 require 'logger'
 require 'mixlib/shellout'
 require 'ostruct'
 
 logger = Logger.new(STDOUT)
 logger.level = "debug"
-source_site = ENV['PROBE_SITE']
-master_host = ENV['MASTER_HOST']
-master_secret = ENV['MASTER_SECRET']
+PROBE_SITE = ENV['PROBE_SITE']
+MASTER_HOST = ENV['MASTER_HOST']
+MASTER_PORT = ENV['MASTER_PORT']
+PROBE_SECRET = ENV['PROBE_SECRET']
+
+def send_metric(type, name, val, source_site, site, timestamp, secret)
+
+  uri = URI("http://#{MASTER_HOST}:#{MASTER_PORT}/send_metric")
+  res = Net::HTTP.post_form(uri, 'type' => type,
+                                 'name' => name,
+                                 'val' => val,
+                                 'source_site' => source_site,
+                                 'site' => site,
+                                 'time' => timestamp,
+                                 'secret' => secret)
+  puts res.body
+
+end
+
+
+# Make sure required vars are set
+if MASTER_HOST.nil? || MASTER_HOST.empty?
+  puts "ERROR, MASTER_HOST is not set! Exiting..."
+  exit 1
+end
+
+
 
 while true
   # Send pang to master server along with secret
@@ -36,7 +61,7 @@ while true
 
     # Parse out the output
     ping_out = OpenStruct.new
-    ping_out.source_site = source_site
+    ping_out.source_site = PROBE_SITE
     ping_out.site = site
     ping_out.ip = ip
 
@@ -56,6 +81,8 @@ while true
       end
     end
     puts ping_out
+
+#    send_metric('ping', 'transmitted', ping_out.transmitted, PROBE_SITE, ping_out.site, Time.now().to_i, PROBE_SECRET)
   end
 
   # Sleep for a bit before checking again

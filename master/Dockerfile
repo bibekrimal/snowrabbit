@@ -15,4 +15,4 @@ RUN gem install sinatra
 RUN gem install mysql2
 
 WORKDIR /app
-CMD /app/master-node.rb
+CMD /app/master.rb
