@@ -15,7 +15,7 @@ MASTER_HOST = ENV['MASTER_HOST']
 MASTER_PORT = ENV['MASTER_PORT']
 PROBE_SECRET = ENV['PROBE_SECRET']
 
-def send_metric(type, name, val, source_site, site, timestamp, secret)
+def send_metric(type, name, val, source_site, site, ip, timestamp, secret)
 
   uri = URI("http://#{MASTER_HOST}:#{MASTER_PORT}/send_metric")
   res = Net::HTTP.post_form(uri, 'type' => type,
@@ -23,6 +23,7 @@ def send_metric(type, name, val, source_site, site, timestamp, secret)
                                  'val' => val,
                                  'source_site' => source_site,
                                  'site' => site,
+                                 'ip' => ip,
                                  'time' => timestamp,
                                  'secret' => secret)
   puts res.body
@@ -61,7 +62,6 @@ while true
 
     # Parse out the output
     ping_out = OpenStruct.new
-    ping_out.source_site = PROBE_SITE
     ping_out.site = site
     ping_out.ip = ip
 
@@ -80,9 +80,14 @@ while true
         ping_out.mdev = $4
       end
     end
-    puts ping_out
 
-#    send_metric('ping', 'transmitted', ping_out.transmitted, PROBE_SITE, ping_out.site, Time.now().to_i, PROBE_SECRET)
+    send_metric('ping', 'transmitted', ping_out.transmitted, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
+    send_metric('ping', 'received', ping_out.received, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
+    send_metric('ping', 'packet_loss', ping_out.packet_loss, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
+    send_metric('ping', 'rtt_min', ping_out.min, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
+    send_metric('ping', 'rtt_avg', ping_out.avg, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
+    send_metric('ping', 'rtt_max', ping_out.max, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
+    send_metric('ping', 'rtt_mdev', ping_out.mdev, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
   end
 
   # Sleep for a bit before checking again
