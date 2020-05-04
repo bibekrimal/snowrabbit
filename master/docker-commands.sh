@@ -11,7 +11,8 @@ case $1 in
 
   start|run)
     echo "RUN"
-    docker run --name $APP -d --rm -ePROBE_SECRET=$PROBE_SECRET -p 8090:4567 $APP
+    #### Removed --rm
+    docker run --name $APP -d -ePROBE_SECRET=$PROBE_SECRET -p 8090:4567 $APP
     ;;
 
   stop)

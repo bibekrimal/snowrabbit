@@ -8,8 +8,8 @@ require 'logger'
 require 'mixlib/shellout'
 require 'ostruct'
 
-logger = Logger.new(STDOUT)
-logger.level = "debug"
+LOGGER = Logger.new(STDOUT)
+LOGGER.level = "debug"
 PROBE_SITE = ENV['PROBE_SITE']
 MASTER_HOST = ENV['MASTER_HOST']
 MASTER_PORT = ENV['MASTER_PORT']
@@ -18,18 +18,20 @@ PROBE_SECRET = ENV['PROBE_SECRET']
 def send_metric(type, name, val, source_site, site, ip, timestamp, secret)
 
   uri = URI("http://#{MASTER_HOST}:#{MASTER_PORT}/send_metric")
-  res = Net::HTTP.post_form(uri, 'type' => type,
-                                 'name' => name,
-                                 'val' => val,
-                                 'source_site' => source_site,
-                                 'site' => site,
-                                 'ip' => ip,
-                                 'time' => timestamp,
-                                 'secret' => secret)
-  puts res.body
-
+  begin
+    res = Net::HTTP.post_form(uri, 'type' => type,
+                                   'name' => name,
+                                   'val' => val,
+                                   'source_site' => source_site,
+                                   'site' => site,
+                                   'ip' => ip,
+                                   'time' => timestamp,
+                                   'secret' => secret)
+    puts res.body
+  rescue
+    LOGGER.error("send_metric timed out")
+  end
 end
-
 
 # Make sure required vars are set
 if MASTER_HOST.nil? || MASTER_HOST.empty?
@@ -54,7 +56,7 @@ while true
 
   # Let's loop through the sites and ping ips
   probe_sites.each do |site, ip|
-    logger.info("Pinging #{site} - #{ip}")
+    LOGGER.info("Pinging #{site} - #{ip}")
 
     ping_cmd = "ping -c 5 -i 1 #{ip}"
     ping = Mixlib::ShellOut.new(ping_cmd)

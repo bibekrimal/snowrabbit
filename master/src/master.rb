@@ -4,13 +4,32 @@ $stdout.sync = true
 require 'sinatra'
 require 'ostruct'
 require 'logger'
+require 'sqlite3'
+require 'sequel'
 
 set :bind, '0.0.0.0'
 set :port, 4567
 
 LOGGER = Logger.new(STDOUT)
 LOGGER.level = "debug"
+DB = Sequel.sqlite('/tmp/testing.db')
 
+# Initialize databases
+unless DB.table_exists?(:metrics)
+  DB.create_table :metrics do
+    primary_key :id
+    column :timestamp, Integer
+    column :type, String
+    column :name, String
+    column :value, String
+    column :source_site, String
+    column :dest_site, String
+    column :dest_ip, String
+  end
+end
+
+
+# URL Actions
 get '/' do
   'Welcome to the Snow Rabbit master node!'
 end
@@ -41,5 +60,10 @@ post '/send_metric' do
   else
     LOGGER.debug("secret succeeded, continuing")
     LOGGER.debug("VALUE: #{metric}")
+
+    table = DB[:metrics]
+    table.insert(timestamp: metric.timestamp, type: metric.type,  name: metric.name, value: metric.value, source_site: metric.source_site, dest_site: metric.site, dest_ip: metric.ip)
+
+    'OK'
   end
 end
