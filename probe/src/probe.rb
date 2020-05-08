@@ -15,21 +15,30 @@ MASTER_HOST = ENV['MASTER_HOST']
 MASTER_PORT = ENV['MASTER_PORT']
 PROBE_SECRET = ENV['PROBE_SECRET']
 
-def send_metric(type, name, val, source_site, site, ip, timestamp, secret)
+def send_ping_metric(ping_vals)
+
+  # Assume val is an ostruct and build a variable list
+  LOGGER.debug("Sending ping metric")
 
   uri = URI("http://#{MASTER_HOST}:#{MASTER_PORT}/send_metric")
   begin
-    res = Net::HTTP.post_form(uri, 'type' => type,
-                                   'name' => name,
-                                   'val' => val,
-                                   'source_site' => source_site,
-                                   'site' => site,
-                                   'ip' => ip,
-                                   'time' => timestamp,
-                                   'secret' => secret)
+    res = Net::HTTP.post_form(uri, 'name' => 'ping',
+                                   'source_site' => PROBE_SITE,
+                                   'site' => ping_vals.site,
+                                   'ip' => ping_vals.ip,
+                                   'transmitted' => ping_vals.transmitted,
+                                   'received' => ping_vals.received,
+                                   'packet_loss' => ping_vals.packet_loss,
+                                   'min' => ping_vals.min,
+                                   'avg' => ping_vals.avg,
+                                   'max' => ping_vals.max,
+                                   'mdev' => ping_vals.mdev,
+                                   'time' => Time.now().to_i,
+                                   'secret' => PROBE_SECRET)
+
     puts res.body
   rescue
-    LOGGER.error("send_metric timed out")
+    LOGGER.error("send_ping_metric timed out")
   end
 end
 
@@ -83,13 +92,15 @@ while true
       end
     end
 
-    send_metric('ping', 'transmitted', ping_out.transmitted, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
-    send_metric('ping', 'received', ping_out.received, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
-    send_metric('ping', 'packet_loss', ping_out.packet_loss, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
-    send_metric('ping', 'rtt_min', ping_out.min, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
-    send_metric('ping', 'rtt_avg', ping_out.avg, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
-    send_metric('ping', 'rtt_max', ping_out.max, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
-    send_metric('ping', 'rtt_mdev', ping_out.mdev, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
+    send_ping_metric(ping_out)
+
+#    send_metric('ping', 'transmitted', ping_out.transmitted, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
+#    send_metric('ping', 'received', ping_out.received, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
+#    send_metric('ping', 'packet_loss', ping_out.packet_loss, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
+#    send_metric('ping', 'rtt_min', ping_out.min, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
+#    send_metric('ping', 'rtt_avg', ping_out.avg, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
+#    send_metric('ping', 'rtt_max', ping_out.max, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
+#    send_metric('ping', 'rtt_mdev', ping_out.mdev, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
   end
 
   # Sleep for a bit before checking again

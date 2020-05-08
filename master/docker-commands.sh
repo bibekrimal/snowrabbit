@@ -24,7 +24,14 @@ case $1 in
     echo "RESTART"
     $0 stop
     sleep 1
+    $0 rm
+    sleep 1
     $0 start
+    ;;
+
+  rm)
+    echo "RM"
+    docker rm $APP
     ;;
 
   *)

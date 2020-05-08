@@ -4,7 +4,7 @@ MAINTAINER me@jason.camp
 RUN mkdir /app
 ADD src /app/
 
-
+RUN mkdir -p /var/lib/db
 
 #RUN yum -y install mysql mysql-devel gcc gcc-c++
 
