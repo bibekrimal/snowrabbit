@@ -104,7 +104,9 @@ post '/send_metric' do
 end
 
 get '/list_metrics' do
-  @ping_metrics = DB_METRICS[:ping_metrics].limit(10)
+  @ping_metrics = DB_METRICS[:ping_metrics].limit(50).order(Sequel.desc(:timestamp)) 
+#  @ping_metrics = DB_METRICS[:ping_metrics].limit(10).order(:timestamp)
+#  @ping_metrics = DB_METRICS.run "SELECT * FROM ping_metrics ORDER BY timestamp DESC LIMIT 10"
   erb :list_metrics
 end
 
