@@ -12,7 +12,7 @@ case $1 in
   start|run)
     echo "RUN"
     #### Removed --rm
-    docker run --name $APP -d -ePROBE_SECRET=$PROBE_SECRET -p 8090:4567 $APP
+    docker run --name $APP -d -ePROBE_SECRET=$PROBE_SECRET -p 8090:4567 -v ~/git/snowrabbit/master/db:/var/lib/db $APP
     ;;
 
   stop)

@@ -15,6 +15,25 @@ MASTER_HOST = ENV['MASTER_HOST']
 MASTER_PORT = ENV['MASTER_PORT']
 PROBE_SECRET = ENV['PROBE_SECRET']
 
+def send_pang
+  uri = URI("http://#{MASTER_HOST}:#{MASTER_PORT}/pang")
+  begin
+    res = Net::HTTP.post_form(uri, 'name' => 'pang',
+                                   'site' => PROBE_SITE,
+                                   'secret' => PROBE_SECRET)
+
+    if res.code == "200"
+      return true
+    else
+      return false
+    end
+  rescue
+    LOGGER.error("send_pang timed out")
+    return false
+  end
+end
+
+
 def send_ping_metric(ping_vals)
 
   # Assume val is an ostruct and build a variable list
@@ -52,57 +71,51 @@ end
 
 while true
   # Send pang to master server along with secret
+  LOGGER.info("Sending pang")
+  if !send_pang
+    LOGGER.info('Error, cannot reach master or secret failed!')
+  else
+    # We got a pung back, let's get all sites
 
-  # We got a pung back, let's get all sites
+    # Parse returned json from master
+    probe_sites = {}
+    probe_sites['ord'] = "216.200.232.1"
+    probe_sites['ams'] = "185.29.134.1"
+    probe_sites['iad'] = "4.4.4.4"
 
-  # Parse returned json from master
+    # Let's loop through the sites and ping ips
+    probe_sites.each do |site, ip|
+      LOGGER.info("Pinging #{site} - #{ip}")
 
+      ping_cmd = "ping -c 5 -i 1 #{ip}"
+      ping = Mixlib::ShellOut.new(ping_cmd)
+      ping.run_command
 
-  probe_sites = {}
-  probe_sites['ord'] = "216.200.232.1"
-  probe_sites['ams'] = "185.29.134.1"
-  probe_sites['iad'] = "4.4.4.4"
+      # Parse out the output
+      ping_out = OpenStruct.new
+      ping_out.site = site
+      ping_out.ip = ip
 
-  # Let's loop through the sites and ping ips
-  probe_sites.each do |site, ip|
-    LOGGER.info("Pinging #{site} - #{ip}")
-
-    ping_cmd = "ping -c 5 -i 1 #{ip}"
-    ping = Mixlib::ShellOut.new(ping_cmd)
-    ping.run_command
-
-    # Parse out the output
-    ping_out = OpenStruct.new
-    ping_out.site = site
-    ping_out.ip = ip
-
-    ping.stdout.each_line do |line|
-      line.chomp!
-      if line.include?("packet loss")
-        /^(\d+) packets transmitted, (\d+) received, ([0-9\.\-\/]+)\% packet loss, time \d+ms$/.match(line)
-        ping_out.transmitted = $1
-        ping_out.received = $2
-        ping_out.packet_loss = $3
-      elsif line.start_with?("rtt")
-        /^rtt min\/avg\/max\/mdev \= ([0-9\.\-\/]+)\/([0-9\.\-\/]+)\/([0-9\.\-\/]+)\/([0-9\.\-\/]+) ms$/.match(line)
-        ping_out.min = $1
-        ping_out.avg = $2
-        ping_out.max = $3
-        ping_out.mdev = $4
+      ping.stdout.each_line do |line|
+        line.chomp!
+        if line.include?("packet loss")
+          /^(\d+) packets transmitted, (\d+) received, ([0-9\.\-\/]+)\% packet loss, time \d+ms$/.match(line)
+          ping_out.transmitted = $1
+          ping_out.received = $2
+          ping_out.packet_loss = $3
+        elsif line.start_with?("rtt")
+          /^rtt min\/avg\/max\/mdev \= ([0-9\.\-\/]+)\/([0-9\.\-\/]+)\/([0-9\.\-\/]+)\/([0-9\.\-\/]+) ms$/.match(line)
+          ping_out.min = $1
+          ping_out.avg = $2
+          ping_out.max = $3
+          ping_out.mdev = $4
+        end
       end
+
+      send_ping_metric(ping_out)
     end
-
-    send_ping_metric(ping_out)
-
-#    send_metric('ping', 'transmitted', ping_out.transmitted, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
-#    send_metric('ping', 'received', ping_out.received, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
-#    send_metric('ping', 'packet_loss', ping_out.packet_loss, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
-#    send_metric('ping', 'rtt_min', ping_out.min, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
-#    send_metric('ping', 'rtt_avg', ping_out.avg, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
-#    send_metric('ping', 'rtt_max', ping_out.max, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
-#    send_metric('ping', 'rtt_mdev', ping_out.mdev, PROBE_SITE, ping_out.site, ping_out.ip, Time.now().to_i, PROBE_SECRET)
   end
-
   # Sleep for a bit before checking again
-   sleep(60)
+  sleep(60)
 end
+

@@ -40,13 +40,43 @@ unless DB_PROBES.table_exists?(:probes)
     column :description, String
     column :location_lat, String
     column :location_long, String
+    column :secret, String
     column :active, Integer
   end
 end
 
+
 # URL Actions
 get '/' do
   'Welcome to the Snow Rabbit master node!'
+end
+
+post '/pang' do
+  # This will validate that a probe can reach the master and validates its secret
+  # See if this probe is registered
+  probes_registered= DB_PROBES[:probes].where(site: params[:site], active: 0..1)
+  probes_unregistered = DB_PROBES[:probes].where(site: params[:site], active: 2)
+
+  # See if this site is registered or unregistered
+  pang_authed = false
+  probes_registered.each do |probe|
+    LOGGER.info("SECRETS: #{probe[:secret]} - #{params[:secret]}")
+    if probe[:secret] == params[:secret]
+      pang_authed = true
+    end
+  end
+
+  # See if this probe is unregistered, if not mark it as unregistered
+  if !pang_authed && (probes_unregistered.count == 0)
+    DB_PROBES[:probes].insert(site: params[:site], active: 2)
+  end
+
+  if pang_authed
+    'OK'
+  else
+    status 401
+     'Unauthorized'
+  end
 end
 
 get '/send_metric' do
@@ -103,30 +133,18 @@ post '/send_metric' do
   end
 end
 
+
 get '/list_metrics' do
   @ping_metrics = DB_METRICS[:ping_metrics].limit(50).order(Sequel.desc(:timestamp)) 
-#  @ping_metrics = DB_METRICS[:ping_metrics].limit(10).order(:timestamp)
-#  @ping_metrics = DB_METRICS.run "SELECT * FROM ping_metrics ORDER BY timestamp DESC LIMIT 10"
   erb :list_metrics
 end
 
-#13|1588945152|ping|rtt_max|359.407|ewr|ams|185.29.134.1
-#14|1588945152|ping|rtt_mdev|90.184|ewr|ams|185.29.134.1
-#15|1588945166|ping|transmitted|5|ewr|iad|4.4.4.4
-#16|1588945166|ping|received|0|ewr|iad|4.4.4.4
-#17|1588945166|ping|packet_loss|100|ewr|iad|4.4.4.4
-#18|1588945166|ping|rtt_min||ewr|iad|4.4.4.4
-#19|1588945166|ping|rtt_avg||ewr|iad|4.4.4.4
-#20|1588945166|ping|rtt_max||ewr|iad|4.4.4.4
-#21|1588945166|ping|rtt_mdev||ewr|iad|4.4.4.4
-#sqlite> .schema
-#CREATE TABLE `metrics` (`id` integer NOT NULL PRIMARY KEY AUTOINCREMENT, `timestamp` integer, `type` varchar(255), `name` varchar(255), `value` varchar(255), `source_site` varchar(255), `dest_site` varchar(255), `dest_ip` varchar(255));
-#
 
 get '/list_probes' do
-  table_probe = DB_PROBES[:probes]
+  @probes = DB_PROBES[:probes].where(active: 0..1)
+  @probes_unregistered = DB_PROBES[:probes].where(active: 2)
+  erb :list_probes
 
-  table_probe.all.each do |t|
-    LOGGER.debug(t)
-  end
 end
+
+
