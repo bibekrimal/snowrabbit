@@ -6,6 +6,7 @@ require 'ostruct'
 require 'logger'
 require 'sqlite3'
 require 'sequel'
+require 'json'
 
 set :bind, '0.0.0.0'
 set :port, 4567
@@ -157,11 +158,11 @@ end
 
 post '/get_probes' do
   probes = DB_PROBES[:probes].where(active: 1)
-  probe_out = ''
+  probes_out = {}
   probes.each do |p|
-    probe_out << "#{p[:site]},#{p[:ip]}\n"
+    probes_out[p[:site]] = p[:ip]
   end
-  probe_out
+  JSON.generate(probes_out)
 end
 
 post '/register_probe' do

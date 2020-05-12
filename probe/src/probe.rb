@@ -7,6 +7,7 @@ require 'net/http'
 require 'logger'
 require 'mixlib/shellout'
 require 'ostruct'
+require 'json'
 
 LOGGER = Logger.new(STDOUT)
 LOGGER.level = "debug"
@@ -35,20 +36,17 @@ end
 
 def get_probe_sites
   uri = URI("http://#{MASTER_HOST}:#{MASTER_PORT}/get_probes")
+  probe_sites = {}
+
   begin
     res = Net::HTTP.post_form(uri, 'secret' => PROBE_SECRET)
 
-    LOGGER.info("GET_PROBES: #{res.body}")
-
-    if res.code == "200"
-      return true
-    else
-      return false
-    end
+    probe_sites = JSON.parse(res.body)
   rescue
-    LOGGER.error("send_pang timed out")
-    return false
+    LOGGER.error("get_probe_sites timed out")
   end
+
+  return probe_sites
 end
 
 
@@ -99,42 +97,38 @@ while true
     # Parse returned json from master
     probe_sites = get_probe_sites()
 
-
-    probe_sites = {}
-    probe_sites['ord'] = "216.200.232.1"
-    probe_sites['ams'] = "185.29.134.1"
-    probe_sites['iad'] = "4.4.4.4"
-
     # Let's loop through the sites and ping ips
     probe_sites.each do |site, ip|
-      LOGGER.info("Pinging #{site} - #{ip}")
+      unless site == PROBE_SITE
+        LOGGER.info("Pinging #{site} - #{ip}")
 
-      ping_cmd = "ping -c 5 -i 1 #{ip}"
-      ping = Mixlib::ShellOut.new(ping_cmd)
-      ping.run_command
+        ping_cmd = "ping -c 5 -i 1 #{ip}"
+        ping = Mixlib::ShellOut.new(ping_cmd)
+        ping.run_command
 
-      # Parse out the output
-      ping_out = OpenStruct.new
-      ping_out.site = site
-      ping_out.ip = ip
+        # Parse out the output
+        ping_out = OpenStruct.new
+        ping_out.site = site
+        ping_out.ip = ip
 
-      ping.stdout.each_line do |line|
-        line.chomp!
-        if line.include?("packet loss")
-          /^(\d+) packets transmitted, (\d+) received, ([0-9\.\-\/]+)\% packet loss, time \d+ms$/.match(line)
-          ping_out.transmitted = $1
-          ping_out.received = $2
-          ping_out.packet_loss = $3
-        elsif line.start_with?("rtt")
-          /^rtt min\/avg\/max\/mdev \= ([0-9\.\-\/]+)\/([0-9\.\-\/]+)\/([0-9\.\-\/]+)\/([0-9\.\-\/]+) ms$/.match(line)
-          ping_out.min = $1
-          ping_out.avg = $2
-          ping_out.max = $3
-          ping_out.mdev = $4
+        ping.stdout.each_line do |line|
+          line.chomp!
+          if line.include?("packet loss")
+            /^(\d+) packets transmitted, (\d+) received, ([0-9\.\-\/]+)\% packet loss, time \d+ms$/.match(line)
+            ping_out.transmitted = $1
+            ping_out.received = $2
+            ping_out.packet_loss = $3
+          elsif line.start_with?("rtt")
+            /^rtt min\/avg\/max\/mdev \= ([0-9\.\-\/]+)\/([0-9\.\-\/]+)\/([0-9\.\-\/]+)\/([0-9\.\-\/]+) ms$/.match(line)
+            ping_out.min = $1
+            ping_out.avg = $2
+            ping_out.max = $3
+            ping_out.mdev = $4
+          end
         end
-      end
 
-      send_ping_metric(ping_out)
+        send_ping_metric(ping_out)
+      end
     end
   end
   # Sleep for a bit before checking again
