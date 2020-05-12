@@ -106,7 +106,7 @@ post '/send_metric' do
   end
 
   # Let's make sure we have the correct secret
-  if metric.secret != ENV['PROBE_SECRET']
+  if metric.secret != DB_PROBE[:probes].where(site: metric.site, active: 0..1)
     LOGGER.debug("secret failed, skipping")
     status 401
     'Forbidden'
