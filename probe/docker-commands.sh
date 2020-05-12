@@ -10,7 +10,7 @@ PROBE_SITE=ewr
 case $1 in
   build)
     echo "BUILD"
-    docker build -t $APP .
+    docker build -t $DOCKER_ID/$APP .
     ;;
 
   start|run)

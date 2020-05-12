@@ -5,6 +5,7 @@
 <TR>
 <TH>Site</TH>
 <TH>Description</TH>
+<TH>Secret</TH>
 <TH>Active</TH>
 </TR>
 
@@ -12,6 +13,7 @@
 <TR>
 <TD ALIGN=right><%= p[:site] %></TD>
 <TD ALIGN=right><%= p[:description] %></TD>
+<TD ALIGN=right><%= p[:secret] %></TD>
 <TD ALIGN=right><%= p[:active] %></TD>
 </TR>
 <% end %>
@@ -23,16 +25,21 @@
 
 <TR>
 <TH>Site</TH>
-<TH>Description</TH>
+<TH>IP</TH>
+<TH>Secret</TH>
 <TH>Active</TH>
 </TR>
 
 <% @probes_unregistered.each do |p| %>
+<FORM ACTION="/register_probe" METHOD="POST">
+<INPUT TYPE="hidden" NAME="site" VALUE="<%= p[:site] %>">
 <TR>
 <TD ALIGN=right><%= p[:site] %></TD>
-<TD ALIGN=right><%= p[:description] %></TD>
-<TD ALIGN=right><%= p[:active] %></TD>
+<TD ALIGN=right><%= p[:ip] %></TD>
+<TD ALIGN=right><INPUT NAME="secret" VALUE="<%= [*('a'..'z'),*('0'..'9')].shuffle[0,32].join %>" SIZE=50></TD>
+<TD ALIGN=right><INPUT TYPE="submit" VALUE="Register"></TD>
 </TR>
+</FORM>
 <% end %>
 </TABLE>
 

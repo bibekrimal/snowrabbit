@@ -33,6 +33,25 @@ def send_pang
   end
 end
 
+def get_probe_sites
+  uri = URI("http://#{MASTER_HOST}:#{MASTER_PORT}/get_probes")
+  begin
+    res = Net::HTTP.post_form(uri, 'secret' => PROBE_SECRET)
+
+    LOGGER.info("GET_PROBES: #{res.body}")
+
+    if res.code == "200"
+      return true
+    else
+      return false
+    end
+  rescue
+    LOGGER.error("send_pang timed out")
+    return false
+  end
+end
+
+
 
 def send_ping_metric(ping_vals)
 
@@ -78,6 +97,9 @@ while true
     # We got a pung back, let's get all sites
 
     # Parse returned json from master
+    probe_sites = get_probe_sites()
+
+
     probe_sites = {}
     probe_sites['ord'] = "216.200.232.1"
     probe_sites['ams'] = "185.29.134.1"

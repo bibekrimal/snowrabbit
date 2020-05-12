@@ -37,6 +37,7 @@ unless DB_PROBES.table_exists?(:probes)
   DB_PROBES.create_table :probes do
     primary_key :id
     column :site, String
+    column :ip, String
     column :description, String
     column :location_lat, String
     column :location_long, String
@@ -60,15 +61,14 @@ post '/pang' do
   # See if this site is registered or unregistered
   pang_authed = false
   probes_registered.each do |probe|
-    LOGGER.info("SECRETS: #{probe[:secret]} - #{params[:secret]}")
     if probe[:secret] == params[:secret]
       pang_authed = true
     end
   end
 
   # See if this probe is unregistered, if not mark it as unregistered
-  if !pang_authed && (probes_unregistered.count == 0)
-    DB_PROBES[:probes].insert(site: params[:site], active: 2)
+  if !pang_authed && (probes_registered.count == 0) && (probes_unregistered.count == 0)
+    DB_PROBES[:probes].insert(site: params[:site], ip: request.ip, active: 2)
   end
 
   if pang_authed
@@ -106,11 +106,16 @@ post '/send_metric' do
   end
 
   # Let's make sure we have the correct secret
-  if metric.secret != DB_PROBE[:probes].where(site: metric.site, active: 0..1)
-    LOGGER.debug("secret failed, skipping")
+  probe_secret = DB_PROBES[:probes].where(site: metric.source_site, active: 1).first
+  if !probe_secret
+    LOGGER.debug("No secret found for site #{metric.source_site}")
+    status 401
+    'Forbidden'   
+  elsif (metric.secret != probe_secret[:secret])
+    LOGGER.debug("secret failed, ignoring...")
     status 401
     'Forbidden'
-  else
+  elsif metric.secret == probe_secret[:secret]
     LOGGER.debug("secret succeeded, continuing")
     LOGGER.debug("VALUE: #{metric}")
 
@@ -127,9 +132,13 @@ post '/send_metric' do
                    avg: metric.avg,
                    max: metric.max,
                    mdev: metric.mdev)
+
+      'OK'
+    else
+      status 401
+      'Forbidden'
     end
 
-    'OK'
   end
 end
 
@@ -144,7 +153,24 @@ get '/list_probes' do
   @probes = DB_PROBES[:probes].where(active: 0..1)
   @probes_unregistered = DB_PROBES[:probes].where(active: 2)
   erb :list_probes
-
 end
 
+post '/get_probes' do
+  probes = DB_PROBES[:probes].where(active: 1)
+  probe_out = ''
+  probes.each do |p|
+    probe_out << "#{p[:site]},#{p[:ip]}\n"
+  end
+  probe_out
+end
 
+post '/register_probe' do
+  # register probe
+  # move active status from 2 to 1 and set a secret
+  site = params[:site]
+  secret = params[:secret]
+
+  DB_PROBES[:probes].where(site: site).update(secret: secret, active: 1)
+
+  'Probe registered'
+end

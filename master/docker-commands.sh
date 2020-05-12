@@ -7,13 +7,13 @@ PROBE_SECRET=abc123
 case $1 in
   build)
     echo "BUILD"
-    docker build -t $APP .
+    docker build -t $DOCKER_ID/$APP .
     ;;
 
   start|run)
     echo "RUN"
     #### Removed --rm
-    docker run --name $APP -d -ePROBE_SECRET=$PROBE_SECRET -p 8090:4567 -v ~/git/snowrabbit/master/db:/var/lib/db $DOCKER_ID/$APP
+    docker run --name $DOCKER_ID-$APP -d -ePROBE_SECRET=$PROBE_SECRET -p 8090:4567 -v ~/git/snowrabbit/master/db:/var/lib/db $DOCKER_ID/$APP
     ;;
 
   stop)
