@@ -43,6 +43,11 @@ case $1 in
     docker push $DOCKER_ID/$APP
     ;;
 
+  pull)
+    echo "PULL"
+    docker pull $DOCKER_ID/$APP
+    ;;
+
   *)
     echo "Usage: $0 <build|start|stop|restart>"
     ;;
