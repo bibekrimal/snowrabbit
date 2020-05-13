@@ -40,8 +40,11 @@ unless DB_PROBES.table_exists?(:probes)
     column :site, String
     column :ip, String
     column :description, String
+    column :location, String
     column :location_lat, String
     column :location_long, String
+    column :last_seen, Integer
+    column :color, String
     column :secret, String
     column :active, Integer
   end
@@ -50,7 +53,7 @@ end
 
 # URL Actions
 get '/' do
-  'Welcome to the Snow Rabbit master node!'
+  'Welcome to the Snowrabbit master node!'
 end
 
 post '/pang' do
@@ -134,6 +137,9 @@ post '/send_metric' do
                    max: metric.max,
                    mdev: metric.mdev)
 
+      # Mark that we got a metric from this probe
+      DB_PROBES[:probes].where(site: metric.source_site).update(last_seen: Time.now().to_i)
+
       'OK'
     else
       status 401
@@ -174,4 +180,14 @@ post '/register_probe' do
   DB_PROBES[:probes].where(site: site).update(secret: secret, active: 1)
 
   'Probe registered'
+end
+
+get '/matrix' do
+  # Get all of the latest ping times and display
+  @probes_list = DB_PROBES[:probes].where(active: 1).order(Sequel.desc(:location), Sequel.asc(:site))
+  @probes = @probes_list.map(:site)
+
+  @ping_table = DB_METRICS[:ping_metrics]
+
+  erb :matrix
 end

@@ -1,0 +1,99 @@
+.clearfix:after {
+	content: "";
+	display: block;
+	clear: both;
+}
+
+.ellipsis {
+	white-space: nowrap; /* 1 */
+	text-overflow: ellipsis; /* 2 */
+	overflow: hidden;
+}
+
+.latency-holder {
+	padding: 20px;
+}
+
+.latency-holder table {
+	width: 100%;
+	table-layout: fixed;
+	border-spacing: 2px;
+	border-collapse: separate;
+}
+
+.latency-holder table th,
+.latency-holder table td {
+	border: 2px solid #ced4da;
+	text-align: center;
+	font: 12px/1 Arial, "Helvetica Neue", Helvetica, sans-serif;
+	height: 22px;
+}
+
+.latency-holder table th.corner,
+.latency-holder table td.corner {
+	background: none;
+	border: none;
+}
+
+.latency-holder table th.empty-box,
+.latency-holder table td.empty-box {
+	background: #ced4da;
+}
+
+.latency-holder table th {
+	font-weight: bold;
+	text-transform: uppercase;
+}
+
+.latency-holder table th.heading-maroon {
+	background: #473144;
+	border-color: #473144;
+	color: #fff;
+}
+
+.latency-holder table th.heading-purple {
+	background: #464d77;
+	border-color: #464d77;
+	color: #fff;
+}
+
+.latency-holder table th.heading-gunmetal {
+	background: #2d3142;
+	border-color: #2d3142;
+	color: #fff;
+}
+
+.latency-holder table th.heading-lavender {
+	background: #d8d8f6;
+	border-color: #d8d8f6;
+}
+
+.latency-holder table th.heading-spanish-gray {
+	background: #a39594;
+	border-color: #a39594;
+	color: #fff;
+}
+
+.latency-holder table td.red {
+	border-color: #bf0603;
+}
+
+.latency-holder table td.green {
+	border-color: #5fad56;
+}
+
+.latency-holder table td.gray {
+	border-color: #393e41;
+}
+
+.latency-holder table td.saffron {
+	border-color: #f3ca40;
+}
+
+.latency-holder table td.tangerine {
+	border-color: #ef8a17;
+}
+
+body {
+	min-width: 320px;
+}

@@ -1,19 +1,33 @@
 <CENTER>
 <h2>Probes</h2>
-<TABLE BORDER=1 WIDTH=50%>
+<TABLE BORDER=1 WIDTH=75%>
 
 <TR>
 <TH>Site</TH>
+<TH>Location</TH>
 <TH>Description</TH>
+<TH>IP</TH>
 <TH>Secret</TH>
+<TH>Last Seen</TH>
+<TH>UI Color</TH>
 <TH>Active</TH>
 </TR>
 
 <% @probes.each do |p| %>
 <TR>
 <TD ALIGN=right><%= p[:site] %></TD>
+<TD ALIGN=right><%= p[:location] %></TD>
 <TD ALIGN=right><%= p[:description] %></TD>
+<TD ALIGN=right><%= p[:ip] %></TD>
 <TD ALIGN=right><%= p[:secret] %></TD>
+<TD ALIGN=right>
+<% if p[:last_seen] %>
+<%=   Time.now.to_i - p[:last_seen] %> seconds ago
+<% else %>
+Not seen
+<% end %>
+</TD>
+<TD ALIGN=right><%= p[:color] %></TD>
 <TD ALIGN=right><%= p[:active] %></TD>
 </TR>
 <% end %>
@@ -21,7 +35,7 @@
 
 
 <h2>Unregistered Probes</h2>
-<TABLE BORDER=1 WIDTH=50%>
+<TABLE BORDER=1 WIDTH=75%>
 
 <TR>
 <TH>Site</TH>
