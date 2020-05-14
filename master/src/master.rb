@@ -191,3 +191,12 @@ get '/matrix' do
 
   erb :matrix
 end
+
+get '/site_details' do
+  @source_site = params[:source_site]
+  @dest_site = params[:dest_site]
+
+
+  erb :site_details
+end
+
