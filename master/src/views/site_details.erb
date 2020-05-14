@@ -1,3 +1,49 @@
-<%= @source_site %> -> <%= @dest_site %>
-<hr>
-Ping
+<section class="pb-3">
+	<h3 class="h4 font-weight-bold text-center"><%= @source_site %> -> <%= @dest_site %></h3>
+	<h4 class="h6 font-weight-bold text-center">Last 5 ping values</h4>
+	<div class="py-2">
+		<table class="table table-sm small mb-0">
+			<thead>
+				<tr>
+					<th>Transmitted</th>
+					<th>Received</th>
+					<th>Packet Loss</th>
+					<th>Min</th>
+					<th>Average</th>
+					<th>Max</th>
+					<th>Dev</th>
+				</tr>
+			</thead>
+			<tbody>
+<% @ping_metrics.each do |p| %>
+				<tr>
+					<td><%= p[:transmitted] %></td>
+					<td><%= p[:received] %></td>
+					<td><%= p[:packet_loss] %></td>
+					<td><%= p[:min] %></td>
+					<td><%= p[:avg] %></td>
+					<td><%= p[:max] %></td>
+					<td><%= p[:mdev] %></td>
+				</tr>
+<% end %>
+			</tbody>
+		</table>
+	</div>
+</section>
+<section class="pb-3">
+	<h3 class="h5 font-weight-bold text-center mb-3">Latest Traceroute</h3>
+	<pre class="font-xs mb-0">
+MacBook-Air:website-somethingcool macbook$ traceroute 1.1.1.1
+traceroute to 1.1.1.1 (1.1.1.1), 64 hops max, 52 byte packets
+ 1  192.168.1.1 (192.168.1.1)  2.100 ms  2.636 ms  3.037 ms
+ 2  142.254.214.149 (142.254.214.149)  12.405 ms  13.879 ms  11.763 ms
+ 3  agg63.onntny0902h.northeast.rr.com (24.58.208.61)  39.010 ms  36.660 ms  33.136 ms
+ 4  agg23.ithcnycy02r.northeast.rr.com (24.58.36.74)  20.891 ms  19.583 ms  20.717 ms
+ 5  be1.ithcnycy02r.nyroc.rr.com (24.58.32.86)  24.008 ms  24.720 ms  21.340 ms
+ 6  bu-ether13.tustca4200w-bcr00.tbone.rr.com (66.109.6.2)  36.833 ms  45.027 ms  44.585 ms
+ 7  66.109.5.225 (66.109.5.225)  90.270 ms  30.131 ms  34.145 ms
+ 8  0.ae4.pr1.dca10.tbone.rr.com (66.109.1.113)  38.944 ms  34.320 ms  34.656 ms
+ 9  one.one.one.one (1.1.1.1)  31.295 ms  33.790 ms  34.244 ms
+	</pre>
+</section>
+

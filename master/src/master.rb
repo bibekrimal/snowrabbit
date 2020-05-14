@@ -195,7 +195,7 @@ end
 get '/site_details' do
   @source_site = params[:source_site]
   @dest_site = params[:dest_site]
-
+  @ping_metrics = DB_METRICS[:ping_metrics].where(source_site: @source_site, dest_site: @dest_site).limit(5).order(Sequel.desc(:timestamp))
 
   erb :site_details
 end
