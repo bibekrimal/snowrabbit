@@ -34,6 +34,17 @@ unless DB_METRICS.table_exists?(:ping_metrics)
   end
 end
 
+unless DB_METRICS.table_exists?(:traceroute_metrics)
+  DB_METRICS.create_table :traceroute_metrics do
+    primary_key :id
+    column :timestamp, Integer
+    column :source_site, String
+    column :dest_site, String
+    column :dest_ip, String
+    column :traceroute, String
+  end
+end
+
 unless DB_PROBES.table_exists?(:probes)
   DB_PROBES.create_table :probes do
     primary_key :id
@@ -107,6 +118,8 @@ post '/send_metric' do
     metric.avg = params[:avg]
     metric.max = params[:max]
     metric.mdev = params[:mdev]
+  elsif metric.name = "traceroute"
+    metric.traceroute = params[:traceroute]
   end
 
   # Let's make sure we have the correct secret
@@ -141,6 +154,16 @@ post '/send_metric' do
       DB_PROBES[:probes].where(site: metric.source_site).update(last_seen: Time.now().to_i)
 
       'OK'
+    elsif metric.name == "traceroute"
+      table = DB_METRICS[:traceroute_metrics]
+      table.insert(timestamp: metric.timestamp,
+                   source_site: metric.source_site,
+                   dest_site: metric.dest_site,
+                   dest_ip: metric.ip,
+                   traceroute: metric.traceroute)
+
+      # Mark that we got a metric from this probe
+      DB_PROBES[:probes].where(site: metric.source_site).update(last_seen: Time.now().to_i)
     else
       status 401
       'Forbidden'
@@ -157,8 +180,9 @@ end
 
 
 get '/list_probes' do
-  @probes = DB_PROBES[:probes].where(active: 0..1)
+  @probes = DB_PROBES[:probes].where(active: 1)
   @probes_unregistered = DB_PROBES[:probes].where(active: 2)
+  @probes_inactive = DB_PROBES[:probes].where(active: 0)
   erb :list_probes
 end
 

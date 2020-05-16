@@ -8,7 +8,7 @@ RUN apt-get update
 RUN apt-get -y install cron
 
 # Development testing
-RUN apt-get -y install rsyslog vim 
+RUN apt-get -y install rsyslog vim traceroute
 
 RUN gem install sinatra
 RUN gem install sqlite3

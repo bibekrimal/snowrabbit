@@ -1,19 +1,28 @@
 jQuery(function() {
 	initPopup();
+	// $('#example').tooltip(options)
+	$('[data-toggle="tooltip"]').tooltip();
 });
 
 
 function initPopup() {
-	$('.popup-trigger').on('mouseover', function(e) {
+	$('.popup-trigger').on('click', function(e) {
 		// console.log(e.target);
 		let currentElement = $(e.target);
 		if (!(currentElement.attr('data-target')) || (currentElement.attr('data-target') == '') || (currentElement.attr('data-target') == '#')) {
 			return;
 		} else {
+			// currentElement.addClass('popup-active');
+			$(this).tooltip('hide');
 			let content = currentElement.attr('data-target');
-			$.get(content, function(result) {
-				$('body').append('<div class="popup-wrap" style="opacity: 0;">' + result + '</div>');
-			});
+			if (!currentElement.hasClass('popup-active')) {
+				// console.log('has popup');
+				$.get(content, function(result) {
+					$('body').append('<div class="popup-wrap" style="opacity: 0;"><button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>' + result + '</div>');
+				});
+				currentElement.addClass('popup-active');
+			}
+			
 
 			setTimeout(function() {
 				let popup = $('.popup-wrap');
@@ -41,9 +50,19 @@ function initPopup() {
 
 			}, 200);
 		}
-	});
 
-	$('.popup-trigger').on('mouseout', function(e) {
-		$('.popup-wrap').remove();
+		$(document).click(function(event) {
+			$target = $(event.target);
+			$closeBtn = $(event.currentTarget.activeElement);
+
+			if(!$target.closest('.popup-wrap').length && $('.popup-wrap').is(":visible") || $target.closest('.close').length) {
+				currentElement.removeClass('popup-active');
+				$('.popup-wrap').removeClass('active');
+				setTimeout(function() {
+					$('.popup-wrap').remove();
+				}, 200);
+			}
+		});
+
 	});
 }

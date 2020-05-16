@@ -52,11 +52,9 @@ end
 
 
 def send_ping_metric(ping_vals)
-
-  # Assume val is an ostruct and build a variable list
   LOGGER.debug("Sending ping metric")
-
   uri = URI("http://#{MASTER_HOST}:#{MASTER_PORT}/send_metric")
+
   begin
     res = Net::HTTP.post_form(uri, 'name' => 'ping',
                                    'source_site' => PROBE_SITE,
@@ -75,6 +73,25 @@ def send_ping_metric(ping_vals)
     puts res.body
   rescue
     LOGGER.error("send_ping_metric timed out")
+  end
+end
+
+def send_traceroute_metric(site, ip, traceroute_out)
+  LOGGER.info("Sending traceroute metric")
+  uri = URI("http://#{MASTER_HOST}:#{MASTER_PORT}/send_metric")
+
+  begin
+    res = Net::HTTP.post_form(uri, 'name' => 'traceroute',
+                                   'source_site' => PROBE_SITE,
+                                   'site' => site,
+                                   'ip' => ip,
+                                   'traceroute' => traceroute_out,
+                                   'time' => Time.now().to_i,
+                                   'secret' => PROBE_SECRET)
+
+    puts res.body
+  rescue
+    LOGGER.error("send_traceroute_metric timed out")
   end
 end
 
@@ -128,6 +145,15 @@ while true
         end
 
         send_ping_metric(ping_out)
+
+        LOGGER.info("Tracerouting #{site} - #{ip}")
+        traceroute_cmd = "traceroute #{ip}"
+        traceroute = Mixlib::ShellOut.new(traceroute_cmd)
+        traceroute.run_command
+        send_traceroute_metric(site, ip, traceroute.stdout)
+        LOGGER.debug("OUT: #{traceroute.stdout}")
+ 
+
       end
     end
   end

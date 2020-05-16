@@ -17,9 +17,19 @@
                 <main id="main">
                         <div class="container">
                                 <div class="latency-holder">
-<h2>Snowrabbit Matrix</h2>
+					<h2 class="text-center mb-3">Snowrabbit Matrix</h2>
+					<div class="position-relative px-4">
+						<h3 class="h6 mb-0 text-center table-label-y"><span>Dest Sites</span></h3>
                                         <table>
                                                 <thead>
+							<thead>
+								<tr>
+									<th class="corner">&nbsp;</th>
+									<th class="corner" colspan=5>
+										<h3 class="h6 text-center table-label-x">Source Sites</h3>
+									</th>
+								</tr>
+
                                                         <tr>
                                                                 <th class="corner">&nbsp;</th>
 <%
@@ -44,7 +54,7 @@
       ping_metric = @ping_table.where(source_site: probe[:site], dest_site: p[:site]).order(Sequel.desc(:timestamp)).limit(1)
       if ping_metric.first
 %>
-<td class="popup-trigger" data-target="/site_details?source_site=<%=p[:site] %>&dest_site=<%= probe[:site] %>"><%= ping_metric.first[:avg] %></td>
+<td class="popup-trigger" data-target="/site_details?source_site=<%=p[:site] %>&dest_site=<%= probe[:site] %>" data-toggle="tooltip" data-placement="top" data-html="true" title="<span class='small d-block'>Click to open popup</span>"><%= ping_metric.first[:avg] %></td>
 <%
       end
     end
@@ -60,6 +70,7 @@
                                         </table>
                                 </div>
                         </div>
+</div>
                 </main>
         </div>
 </body>

@@ -57,5 +57,29 @@ Not seen
 <% end %>
 </TABLE>
 
+<h2>Inactive Probes</h2>
+<TABLE BORDER=1 WIDTH=75%>
+
+<TR>
+<TH>Site</TH>
+<TH>IP</TH>
+<TH>Last Seen</TH>
+</TR>
+
+<% @probes_inactive.each do |p| %>
+<TR>
+<TD ALIGN=right><%= p[:site] %></TD>
+<TD ALIGN=right><%= p[:ip] %></TD>
+<TD ALIGN=right>
+<% if p[:last_seen] %>
+<%=   Time.now.to_i - p[:last_seen] %> seconds ago
+<% else %>
+Not seen
+<% end %>
+</TD>
+</TR>
+<% end %>
+</TABLE>
+
 
 </CENTER>
