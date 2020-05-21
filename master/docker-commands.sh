@@ -18,7 +18,7 @@ case $1 in
 
   stop)
     echo "STOP"
-    docker stop $APP
+    docker stop $DOCKER_ID-$APP
     ;;
 
   restart)
@@ -32,7 +32,7 @@ case $1 in
 
   rm)
     echo "RM"
-    docker rm $APP
+    docker rm $DOCKER_ID-$APP
     ;;
 
   push)

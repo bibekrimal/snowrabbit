@@ -5,20 +5,38 @@ require 'sinatra'
 require 'ostruct'
 require 'logger'
 require 'sqlite3'
+require 'mysql2'
 require 'sequel'
 require 'json'
 
+# Set sinatra config
 set :bind, '0.0.0.0'
 set :port, 4567
 
+# Set up logger
 LOGGER = Logger.new(STDOUT)
-LOGGER.level = "debug"
-DB_METRICS = Sequel.sqlite('/var/lib/db/metrics.db')
-DB_PROBES = Sequel.sqlite('/var/lib/db/probes.db')
+LOGGER.level = ENV['LOGGER_LEVEL'].nil? ? "debug" : ENV['LOGGER_LEVEL']
+
+# Set up database connection
+DB_TYPE = ENV['DB_TYPE']
+DB_USER = ENV['DB_USER']
+DB_PASS = ENV['DB_PASS']
+DB_HOST = ENV['DB_HOST']
+DB_PORT = ENV['DB_PORT']
+DB_DATABASE = ENV['DB_DATABASE']
+
+if DB_TYPE == "sqlite"
+  DB_CONNECTION = Sequel.sqlite("#{DB_DATABASE_PATH}/#{DB_DATABASE}.db")
+elsif DB_TYPE == "mysql"
+  DB_CONNECTION = Sequel.mysql2(DB_DATABASE, user: DB_USER,  password: DB_PASS, host: DB_HOST, port: DB_PORT)
+else
+  LOGGER.error("Could not determine DB_TYPE, exiting!")
+  exit 1
+end
 
 # Initialize databases
-unless DB_METRICS.table_exists?(:ping_metrics)
-  DB_METRICS.create_table :ping_metrics do
+unless DB_CONNECTION.table_exists?(:ping_metrics)
+  DB_CONNECTION.create_table :ping_metrics do
     primary_key :id
     column :timestamp, Integer
     column :source_site, String
@@ -34,19 +52,20 @@ unless DB_METRICS.table_exists?(:ping_metrics)
   end
 end
 
-unless DB_METRICS.table_exists?(:traceroute_metrics)
-  DB_METRICS.create_table :traceroute_metrics do
+unless DB_CONNECTION.table_exists?(:traceroute_metrics)
+  DB_CONNECTION.create_table :traceroute_metrics do
     primary_key :id
     column :timestamp, Integer
     column :source_site, String
     column :dest_site, String
     column :dest_ip, String
-    column :traceroute, String
+    column :traceroute, String, text: true
+
   end
 end
 
-unless DB_PROBES.table_exists?(:probes)
-  DB_PROBES.create_table :probes do
+unless DB_CONNECTION.table_exists?(:probes)
+  DB_CONNECTION.create_table :probes do
     primary_key :id
     column :site, String
     column :ip, String
@@ -70,8 +89,8 @@ end
 post '/pang' do
   # This will validate that a probe can reach the master and validates its secret
   # See if this probe is registered
-  probes_registered= DB_PROBES[:probes].where(site: params[:site], active: 0..1)
-  probes_unregistered = DB_PROBES[:probes].where(site: params[:site], active: 2)
+  probes_registered= DB_CONNECTION[:probes].where(site: params[:site], active: 0..1)
+  probes_unregistered = DB_CONNECTION[:probes].where(site: params[:site], active: 2)
 
   # See if this site is registered or unregistered
   pang_authed = false
@@ -83,7 +102,7 @@ post '/pang' do
 
   # See if this probe is unregistered, if not mark it as unregistered
   if !pang_authed && (probes_registered.count == 0) && (probes_unregistered.count == 0)
-    DB_PROBES[:probes].insert(site: params[:site], ip: request.ip, active: 2)
+    DB_CONNECTION[:probes].insert(site: params[:site], ip: request.ip, active: 2)
   end
 
   if pang_authed
@@ -123,7 +142,7 @@ post '/send_metric' do
   end
 
   # Let's make sure we have the correct secret
-  probe_secret = DB_PROBES[:probes].where(site: metric.source_site, active: 1).first
+  probe_secret = DB_CONNECTION[:probes].where(site: metric.source_site, active: 1).first
   if !probe_secret
     LOGGER.debug("No secret found for site #{metric.source_site}")
     status 401
@@ -137,7 +156,7 @@ post '/send_metric' do
     LOGGER.debug("VALUE: #{metric}")
 
     if metric.name == "ping"
-      table = DB_METRICS[:ping_metrics]
+      table = DB_CONNECTION[:ping_metrics]
       table.insert(timestamp: metric.timestamp,
                    source_site: metric.source_site,
                    dest_site: metric.dest_site,
@@ -151,11 +170,11 @@ post '/send_metric' do
                    mdev: metric.mdev)
 
       # Mark that we got a metric from this probe
-      DB_PROBES[:probes].where(site: metric.source_site).update(last_seen: Time.now().to_i)
+      DB_CONNECTION[:probes].where(site: metric.source_site).update(last_seen: Time.now().to_i)
 
       'OK'
     elsif metric.name == "traceroute"
-      table = DB_METRICS[:traceroute_metrics]
+      table = DB_CONNECTION[:traceroute_metrics]
       table.insert(timestamp: metric.timestamp,
                    source_site: metric.source_site,
                    dest_site: metric.dest_site,
@@ -163,7 +182,7 @@ post '/send_metric' do
                    traceroute: metric.traceroute)
 
       # Mark that we got a metric from this probe
-      DB_PROBES[:probes].where(site: metric.source_site).update(last_seen: Time.now().to_i)
+      DB_CONNECTION[:probes].where(site: metric.source_site).update(last_seen: Time.now().to_i)
     else
       status 401
       'Forbidden'
@@ -174,20 +193,20 @@ end
 
 
 get '/list_metrics' do
-  @ping_metrics = DB_METRICS[:ping_metrics].limit(50).order(Sequel.desc(:timestamp)) 
+  @ping_metrics = DB_CONNECTION[:ping_metrics].limit(50).order(Sequel.desc(:timestamp)) 
   erb :list_metrics
 end
 
 
 get '/list_probes' do
-  @probes = DB_PROBES[:probes].where(active: 1)
-  @probes_unregistered = DB_PROBES[:probes].where(active: 2)
-  @probes_inactive = DB_PROBES[:probes].where(active: 0)
+  @probes = DB_CONNECTION[:probes].where(active: 1)
+  @probes_unregistered = DB_CONNECTION[:probes].where(active: 2)
+  @probes_inactive = DB_CONNECTION[:probes].where(active: 0)
   erb :list_probes
 end
 
 post '/get_probes' do
-  probes = DB_PROBES[:probes].where(active: 1)
+  probes = DB_CONNECTION[:probes].where(active: 1)
   probes_out = {}
   probes.each do |p|
     probes_out[p[:site]] = p[:ip]
@@ -201,17 +220,20 @@ post '/register_probe' do
   site = params[:site]
   secret = params[:secret]
 
-  DB_PROBES[:probes].where(site: site).update(secret: secret, active: 1)
+  DB_CONNECTION[:probes].where(site: site).update(secret: secret, active: 1)
 
   'Probe registered'
 end
 
 get '/matrix' do
   # Get all of the latest ping times and display
-  @probes_list = DB_PROBES[:probes].where(active: 1).order(Sequel.desc(:location), Sequel.asc(:site))
-  @probes = @probes_list.map(:site)
+  @probes_list = DB_CONNECTION[:probes].where(active: 1).order(Sequel.desc(:location), Sequel.asc(:site))
+  if @probes_list.count > 0
+    @probe_last_seen = @probes_list.first[:last_seen]
+  end 
 
-  @ping_table = DB_METRICS[:ping_metrics]
+
+  @ping_table = DB_CONNECTION[:ping_metrics]
 
   erb :matrix
 end
@@ -219,7 +241,14 @@ end
 get '/site_details' do
   @source_site = params[:source_site]
   @dest_site = params[:dest_site]
-  @ping_metrics = DB_METRICS[:ping_metrics].where(source_site: @source_site, dest_site: @dest_site).limit(5).order(Sequel.desc(:timestamp))
+  @ping_metrics = DB_CONNECTION[:ping_metrics].where(source_site: @source_site, dest_site: @dest_site).limit(5).order(Sequel.desc(:timestamp))
+  traceroute_metrics = DB_CONNECTION[:traceroute_metrics].where(source_site: @source_site, dest_site: @dest_site).limit(1).order(Sequel.desc(:timestamp))
+
+  if traceroute_metrics.count > 0
+    @traceroute_out = traceroute_metrics.first[:traceroute]
+  else
+    @traceroute_out = "No traceroute found."
+  end
 
   erb :site_details
 end

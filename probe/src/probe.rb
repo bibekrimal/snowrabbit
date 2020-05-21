@@ -10,7 +10,7 @@ require 'ostruct'
 require 'json'
 
 LOGGER = Logger.new(STDOUT)
-LOGGER.level = "debug"
+LOGGER.level = "info"
 PROBE_SITE = ENV['PROBE_SITE']
 MASTER_HOST = ENV['MASTER_HOST']
 MASTER_PORT = ENV['MASTER_PORT']

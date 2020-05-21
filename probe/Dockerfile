@@ -1,14 +1,14 @@
-FROM ruby:2.6
+FROM ruby:2.6-alpine3.11
 MAINTAINER me@jason.camp
 
 RUN mkdir /app
 ADD src /app/
 
-RUN apt-get update
-RUN apt-get -y install cron
-
 # Development testing
-RUN apt-get -y install rsyslog vim traceroute
+RUN apk update
+RUN apk add make gcc g++
+RUN apk add sqlite sqlite-dev sqlite-libs sqlite-static
+#RUN apk add traceroute
 
 RUN gem install sinatra
 RUN gem install sqlite3

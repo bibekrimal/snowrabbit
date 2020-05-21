@@ -54,7 +54,7 @@
       ping_metric = @ping_table.where(source_site: probe[:site], dest_site: p[:site]).order(Sequel.desc(:timestamp)).limit(1)
       if ping_metric.first
 %>
-<td class="popup-trigger" data-target="/site_details?source_site=<%=p[:site] %>&dest_site=<%= probe[:site] %>" data-toggle="tooltip" data-placement="top" data-html="true" title="<span class='small d-block'>Click to open popup</span>"><%= ping_metric.first[:avg] %></td>
+<td class="popup-trigger" data-toggle="modal" data-target="#resultDataModal" data-content="/site_details?source_site=<%=p[:site] %>&dest_site=<%= probe[:site] %>"><span class="d-block" data-toggle="tooltip" data-placement="top" data-html="true" title="<span class='small d-block'>Click to open popup</span>"><%= ping_metric.first[:avg] %></span></td>
 <%
       end
     end
@@ -68,10 +68,28 @@
 
                                                 </tbody>
                                         </table>
+						<div class="text-right py-1">
+							<span class="update-status small text-gray">Last Updated: <time class="font-weight-bold text-dark"><%= Time.at(@probe_last_seen) %> (<%= Time.now().to_i - @probe_last_seen %> seconds ago)</time></span>
+						</div>
                                 </div>
                         </div>
 </div>
                 </main>
+
+		<!-- Modal -->
+		<div class="modal fade" id="resultDataModal" tabindex="-1" role="dialog" aria-labelledby="resultDataModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+				<div class="modal-content">
+					<div class="modal-body">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<div class="content"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+
         </div>
 </body>
 </html>
