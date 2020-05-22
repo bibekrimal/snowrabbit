@@ -15,17 +15,24 @@ set :port, 4567
 
 # Set up logger
 LOGGER = Logger.new(STDOUT)
-LOGGER.level = ENV['LOGGER_LEVEL'].nil? ? "debug" : ENV['LOGGER_LEVEL']
+#LOGGER.level = ENV['LOGGER_LEVEL'].nil? ? "info" : ENV['LOGGER_LEVEL']
+LOGGER.info("Logger Level: #{ENV['LOGGER_LEVEL']}")
+LOGGER.level = ENV['LOGGER_LEVEL']
+LOGGER.debug("Logger Level: #{ENV['LOGGER_LEVEL']}")
 
 # Set up database connection
 DB_TYPE = ENV['DB_TYPE']
-DB_USER = ENV['DB_USER']
-DB_PASS = ENV['DB_PASS']
-DB_HOST = ENV['DB_HOST']
-DB_PORT = ENV['DB_PORT']
-DB_DATABASE = ENV['DB_DATABASE']
+DB_USER = ENV['DB_USER'].nil? ? "root" : ENV['DB_USER']
+DB_PASS = ENV['DB_PASS'].nil? ? "" : ENV['DB_PASS']
+DB_HOST = ENV['DB_HOST'].nil? ? "localhost" : ENV['DB_HOST']
+DB_PORT = ENV['DB_PORT'].nil? ? "3306" : ENV['DB_PORT']
+DB_DATABASE = ENV['DB_DATABASE'].nil? ? "snowrabbit" : ENV['DB_DATABASE']
 
 if DB_TYPE == "sqlite"
+  if DB_DATABASE_PATH.nil?
+    LOGGER.error("Error, DB_TYPE=sqlite but DB_DATABASE_PATH is not set, exiting!")
+    exit 1
+  end
   DB_CONNECTION = Sequel.sqlite("#{DB_DATABASE_PATH}/#{DB_DATABASE}.db")
 elsif DB_TYPE == "mysql"
   DB_CONNECTION = Sequel.mysql2(DB_DATABASE, user: DB_USER,  password: DB_PASS, host: DB_HOST, port: DB_PORT)
@@ -48,7 +55,6 @@ unless DB_CONNECTION.table_exists?(:ping_metrics)
     column :min, String
     column :avg, String
     column :max, String
-    column :mdev, String
   end
 end
 
@@ -136,7 +142,6 @@ post '/send_metric' do
     metric.min = params[:min]
     metric.avg = params[:avg]
     metric.max = params[:max]
-    metric.mdev = params[:mdev]
   elsif metric.name = "traceroute"
     metric.traceroute = params[:traceroute]
   end
@@ -156,6 +161,7 @@ post '/send_metric' do
     LOGGER.debug("VALUE: #{metric}")
 
     if metric.name == "ping"
+      LOGGER.debug("Saving ping metric")
       table = DB_CONNECTION[:ping_metrics]
       table.insert(timestamp: metric.timestamp,
                    source_site: metric.source_site,
@@ -166,14 +172,14 @@ post '/send_metric' do
                    packet_loss: metric.packet_loss,
                    min: metric.min,
                    avg: metric.avg,
-                   max: metric.max,
-                   mdev: metric.mdev)
+                   max: metric.max)
 
       # Mark that we got a metric from this probe
       DB_CONNECTION[:probes].where(site: metric.source_site).update(last_seen: Time.now().to_i)
 
       'OK'
     elsif metric.name == "traceroute"
+      LOGGER.debug("Saving traceroute metric")
       table = DB_CONNECTION[:traceroute_metrics]
       table.insert(timestamp: metric.timestamp,
                    source_site: metric.source_site,
@@ -183,6 +189,8 @@ post '/send_metric' do
 
       # Mark that we got a metric from this probe
       DB_CONNECTION[:probes].where(site: metric.source_site).update(last_seen: Time.now().to_i)
+
+      'OK'
     else
       status 401
       'Forbidden'

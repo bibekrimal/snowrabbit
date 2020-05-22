@@ -10,7 +10,8 @@ require 'ostruct'
 require 'json'
 
 LOGGER = Logger.new(STDOUT)
-LOGGER.level = "info"
+LOGGER.info("Logger Level: #{ENV['LOGGER_LEVEL']}")
+LOGGER.level = ENV['LOGGER_LEVEL']
 PROBE_SITE = ENV['PROBE_SITE']
 MASTER_HOST = ENV['MASTER_HOST']
 MASTER_PORT = ENV['MASTER_PORT']
@@ -53,6 +54,7 @@ end
 
 def send_ping_metric(ping_vals)
   LOGGER.debug("Sending ping metric")
+  LOGGER.debug("METRIC: #{ping_vals}")
   uri = URI("http://#{MASTER_HOST}:#{MASTER_PORT}/send_metric")
 
   begin
@@ -69,16 +71,16 @@ def send_ping_metric(ping_vals)
                                    'mdev' => ping_vals.mdev,
                                    'time' => Time.now().to_i,
                                    'secret' => PROBE_SECRET)
-
-    puts res.body
-  rescue
-    LOGGER.error("send_ping_metric timed out")
+    LOGGER.debug("Result body: #{res.body}")
+  rescue => e
+    LOGGER.error("send_ping_metric errored out - #{e.inspect}")
   end
 end
 
 def send_traceroute_metric(site, ip, traceroute_out)
   LOGGER.info("Sending traceroute metric")
   uri = URI("http://#{MASTER_HOST}:#{MASTER_PORT}/send_metric")
+  LOGGER.debug("URL: #{uri}")
 
   begin
     res = Net::HTTP.post_form(uri, 'name' => 'traceroute',
@@ -89,9 +91,9 @@ def send_traceroute_metric(site, ip, traceroute_out)
                                    'time' => Time.now().to_i,
                                    'secret' => PROBE_SECRET)
 
-    puts res.body
-  rescue
-    LOGGER.error("send_traceroute_metric timed out")
+    LOGGER.debug("Result body: #{res.body}")
+  rescue => e
+    LOGGER.error("send_traceroute_metric errored out - #{e.inspect}")
   end
 end
 
@@ -131,18 +133,21 @@ while true
         ping.stdout.each_line do |line|
           line.chomp!
           if line.include?("packet loss")
-            /^(\d+) packets transmitted, (\d+) received, ([0-9\.\-\/]+)\% packet loss, time \d+ms$/.match(line)
+            /^(\d+) packets transmitted, (\d+) packets received, ([0-9\.\-\/]+)\% packet loss/.match(line)
             ping_out.transmitted = $1
             ping_out.received = $2
             ping_out.packet_loss = $3
-          elsif line.start_with?("rtt")
-            /^rtt min\/avg\/max\/mdev \= ([0-9\.\-\/]+)\/([0-9\.\-\/]+)\/([0-9\.\-\/]+)\/([0-9\.\-\/]+) ms$/.match(line)
+          elsif line.start_with?("round-trip")
+            /^round-trip min\/avg\/max \= ([0-9\.\-\/]+)\/([0-9\.\-\/]+)\/([0-9\.\-\/]+) ms$/.match(line)
             ping_out.min = $1
             ping_out.avg = $2
             ping_out.max = $3
             ping_out.mdev = $4
           end
         end
+
+#2 packets transmitted, 2 packets received, 0% packet loss
+#round-trip min/avg/max = 0.639/1.122/1.606 ms
 
         send_ping_metric(ping_out)
 

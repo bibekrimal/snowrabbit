@@ -1,4 +1,4 @@
-FROM ruby:2.6-alpine3.11
+FROM ruby:2.7-alpine3.11
 MAINTAINER me@jason.camp
 
 RUN mkdir /app
