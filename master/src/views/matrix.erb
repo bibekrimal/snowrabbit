@@ -7,9 +7,10 @@
 	<link rel="stylesheet" href="/css/bootstrap.css">
 	<link rel="stylesheet" href="/css/main.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" crossorigin="anonymous"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-	<script src="/js/jquery.main.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" crossorigin="anonymous" defer></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous" defer></script>
+        <script src="/js/jquery.timeago.js" defer></script>
+	<script src="/js/jquery.main.js" defer></script>
 </head>
 <body>
 
@@ -51,10 +52,14 @@
 <td class="empty-box">&nbsp;</td>
 <%
     else
-      ping_metric = @ping_table.where(source_site: probe[:site], dest_site: p[:site]).order(Sequel.desc(:timestamp)).limit(1)
+      ping_metric = @ping_table.where(source_site: p[:site], dest_site: probe[:site]).order(Sequel.desc(:timestamp)).limit(1)
       if ping_metric.first
+        # Set cell color if needed
+        if ((Time.now.to_i - ping_metric.first[:timestamp]) > 300)
+          ping_status = "gray"
+        end
 %>
-<td class="popup-trigger" data-toggle="modal" data-target="#resultDataModal" data-content="/site_details?source_site=<%=p[:site] %>&dest_site=<%= probe[:site] %>"><span class="d-block" data-toggle="tooltip" data-placement="top" data-html="true" title="<span class='small d-block'>Click to open popup</span>"><%= ping_metric.first[:avg] %></span></td>
+<td class="popup-trigger <%= ping_status %>" data-toggle="modal" data-target="#resultDataModal" data-content="/site_details?source_site=<%=p[:site] %>&dest_site=<%= probe[:site] %>"><span class="d-block" data-toggle="tooltip" data-placement="top" data-html="true" title="<span class='small d-block'>Click to open popup</span>"><%= ping_metric.first[:avg] %></span></td>
 <%
       end
     end
@@ -69,7 +74,8 @@
                                                 </tbody>
                                         </table>
 						<div class="text-right py-1">
-							<span class="update-status small text-gray">Last Updated: <time class="font-weight-bold text-dark"><%= Time.at(@probe_last_seen) %> (<%= Time.now().to_i - @probe_last_seen %> seconds ago)</time></span>
+							<span class="update-status small text-gray">Last Updated: <time class="font-weight-bold text-dark"><%= Time.at(@probe_last_seen).strftime('%Y-%m-%d %H:%M:%S') %> (<abbr title="<%= Time.at(@probe_last_seen).iso8601 %>" class="timeago"></abbr>)</time></span>
+
 						</div>
                                 </div>
                         </div>

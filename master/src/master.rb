@@ -15,10 +15,9 @@ set :port, 4567
 
 # Set up logger
 LOGGER = Logger.new(STDOUT)
-#LOGGER.level = ENV['LOGGER_LEVEL'].nil? ? "info" : ENV['LOGGER_LEVEL']
+LOGGER.level = ENV['LOGGER_LEVEL'].nil? ? "info" : ENV['LOGGER_LEVEL']
 LOGGER.info("Logger Level: #{ENV['LOGGER_LEVEL']}")
-LOGGER.level = ENV['LOGGER_LEVEL']
-LOGGER.debug("Logger Level: #{ENV['LOGGER_LEVEL']}")
+#LOGGER.level = ENV['LOGGER_LEVEL']
 
 # Set up database connection
 DB_TYPE = ENV['DB_TYPE']
@@ -237,9 +236,8 @@ get '/matrix' do
   # Get all of the latest ping times and display
   @probes_list = DB_CONNECTION[:probes].where(active: 1).order(Sequel.desc(:location), Sequel.asc(:site))
   if @probes_list.count > 0
-    @probe_last_seen = @probes_list.first[:last_seen]
+    @probe_last_seen = @probes_list.order(Sequel.desc(:last_seen)).first[:last_seen]
   end 
-
 
   @ping_table = DB_CONNECTION[:ping_metrics]
 
@@ -253,7 +251,7 @@ get '/site_details' do
   traceroute_metrics = DB_CONNECTION[:traceroute_metrics].where(source_site: @source_site, dest_site: @dest_site).limit(1).order(Sequel.desc(:timestamp))
 
   if traceroute_metrics.count > 0
-    @traceroute_out = traceroute_metrics.first[:traceroute]
+    @traceroute_out = traceroute_metrics.first
   else
     @traceroute_out = "No traceroute found."
   end

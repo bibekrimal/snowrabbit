@@ -5,25 +5,31 @@
 		<table class="table table-sm small mb-0">
 			<thead>
 				<tr>
-					<th>Time</th>
-					<th>Transmitted</th>
-					<th>Received</th>
-					<th>Packet Loss</th>
-					<th>Min</th>
-					<th>Average</th>
-					<th>Max</th>
+					<th class="bg-light border-light">Time</th>
+					<th class="text-right bg-light border-light">Transmitted</th>
+					<th class="text-right bg-light border-light">Received</th>
+					<th class="text-right bg-light border-light">Packet Loss</th>
+					<th class="text-right bg-light border-light">Min</th>
+					<th class="text-right bg-light border-light">Average</th>
+					<th class="text-right bg-light border-light">Max</th>
 				</tr>
 			</thead>
 			<tbody>
-<% @ping_metrics.each do |p| %>
+<%
+  last_updated_display = Time.at(@traceroute_out[:timestamp]).to_datetime.strftime('%Y-%m-%d %H:%M:%S')
+  last_updated_iso = Time.at(@traceroute_out[:timestamp]).iso8601
+
+ @ping_metrics.each do |p|
+  time_display = Time.at(p[:timestamp]).to_datetime.strftime('%Y-%m-%d %H:%M:%S')
+%>
 				<tr>
-					<td><%= Time.at(p[:timestamp]) %></td>
-					<td><%= p[:transmitted] %></td>
-					<td><%= p[:received] %></td>
-					<td><%= p[:packet_loss] %></td>
-					<td><%= p[:min] %></td>
-					<td><%= p[:avg] %></td>
-					<td><%= p[:max] %></td>
+					<td><%= time_display %></td>
+					<td class="text-right"><%= p[:transmitted] %></td>
+					<td class="text-right"><%= p[:received] %></td>
+					<td class="text-right"><%= p[:packet_loss] %></td>
+					<td class="text-right"><%= p[:min] %></td>
+					<td class="text-right"><%= p[:avg] %></td>
+					<td class="text-right"><%= p[:max] %></td>
 				</tr>
 <% end %>
 			</tbody>
@@ -32,8 +38,11 @@
 </section>
 <section class="pb-3">
 	<h3 class="h5 font-weight-bold text-center mb-3">Latest Traceroute</h3>
+	<div class="mb-3">
+		<span class="update-status small text-gray">Last Updated: <time class="font-weight-bold text-dark" datetime="<%= last_updated_display%>"><%= last_updated_display %> (<abbr title="<%= last_updated_iso%>" class="timeago"></abbr>)</time></span>
+	</div>
 	<pre class="font-xs mb-0">
-          <%= @traceroute_out %>
+          <%= @traceroute_out[:traceroute] %>
 	</pre>
 </section>
 
