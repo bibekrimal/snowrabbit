@@ -1,6 +1,11 @@
 # Snowrabbit
 Snowrabbit is a looking glass network app that displays latency information between sites. It is useful for a datacenter or regional network to measure latency between all connections. It can also be used for multi-homed networks.
 
+## Features
+- Simple installation that requires docker and a database for the master, and docker for the probes.
+- Probes auto register to the master once the proper data is placed in the startup default file
+- Shows ping and traceroute data for all connections
+- Color coding shows latent and down connections
 
 ## Installation
 
