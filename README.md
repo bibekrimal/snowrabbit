@@ -1,3 +1,5 @@
+![Logo](logo.png)
+
 # Snowrabbit
 Snowrabbit is a looking glass network app that displays latency information between sites. It is useful for a datacenter or regional network to measure latency between all connections. It can also be used for multi-homed networks.
 
