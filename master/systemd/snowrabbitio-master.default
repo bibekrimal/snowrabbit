@@ -1,0 +1,7 @@
+DB_TYPE = "mysql"
+DB_USER = "snowrabbit"
+DB_PASS = "abc123"
+DB_HOST = "mysql.snowrabbit.io"
+DB_PORT = "3306"
+DB_DATABASE = "snowrabbit"
+LOGGER_LEVEL = "info"
