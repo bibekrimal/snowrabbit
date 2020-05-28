@@ -3,22 +3,26 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<title>SnowRabbit</title>
+	<title>Snowrabbit</title>
 	<link rel="stylesheet" href="/css/bootstrap.css">
 	<link rel="stylesheet" href="/css/main.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" crossorigin="anonymous" defer></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous" defer></script>
-        <script src="/js/jquery.timeago.js" defer></script>
-	<script src="/js/jquery.main.js" defer></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        <script src="/js/jquery.timeago.js"></script>
+	<script src="/js/jquery.main.js"></script>
 </head>
-<body>
+<body class="not-login">
 
         <div id="wrapper">
+		<div id="header" class="py-2">
+			<div class="container">
+				<div class="logo"><a href="#"><img class="img-fluid" src="/images/logo.png" alt="Snowrabbit"></a></div>
+			</div>
+		</div>
                 <main id="main">
                         <div class="container">
                                 <div class="latency-holder">
-					<h2 class="text-center mb-3">Snowrabbit Matrix</h2>
 					<div class="position-relative px-4">
 						<h3 class="h6 mb-0 text-center table-label-y"><span>Dest Sites</span></h3>
                                         <table>
@@ -73,11 +77,29 @@
 
                                                 </tbody>
                                         </table>
+				</div>
+					<div class="px-4">
 						<div class="text-right py-1">
 							<span class="update-status small text-gray">Last Updated: <time class="font-weight-bold text-dark"><%= Time.at(@probe_last_seen).strftime('%Y-%m-%d %H:%M:%S') %> (<abbr title="<%= Time.at(@probe_last_seen).iso8601 %>" class="timeago"></abbr>)</time></span>
-
 						</div>
-                                </div>
+						<div class="pt-2">
+							<div class="row align-items-center justify-content-end">
+								<div class="col-2 text-right pr-0">
+									<span class="small">Refresh page every:</span>
+								</div>
+								<div class="col-2">
+									<select id="refreshSelect" class="custom-select custom-select-sm">
+										<option value="1">1 min</option>
+										<option value="2">2 mins</option>
+										<option value="3">3 mins</option>
+										<option value="4">4 mins</option>
+										<option value="5">5 mins</option>
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+
                         </div>
 </div>
                 </main>

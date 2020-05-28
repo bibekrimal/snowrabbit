@@ -11,7 +11,7 @@ KillSignal=SIGQUIT
 SyslogIdentifier=snowrabbitio-probe
 StandardOutput=syslog
 StandardError=syslog
-ExecStartPre=/usr/bin/docker rm snowrabbitio-probe
+ExecStartPre=-/usr/bin/docker rm snowrabbitio-probe
 ExecStart=/usr/bin/docker run --name snowrabbitio-probe -eMASTER_HOST=${MASTER_HOST} -eMASTER_PORT=${MASTER_PORT} -ePROBE_SITE=${PROBE_SITE} -ePROBE_SECRET=${PROBE_SECRET} -eLOGGER_LEVEL=${LOGGER_LEVEL} snowrabbitio/probe
 ExecStop=/usr/bin/docker stop snowrabbitio-probe
 Restart=always

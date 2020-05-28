@@ -289,6 +289,34 @@ abbr[data-original-title] {
 	display: none;
 }
 
+#header {
+	background: #edf4f2;
+}
+
+.not-login #header {
+	background: none;
+}
+
+.logo {
+	width: 200px;
+}
+
+.not-login .logo {
+	width: 300px;
+	margin: 0 auto;
+}
+
+.link-login {
+	font-size: 1.125rem !important;
+	font-weight: 500;
+	color: #464d77;
+	letter-spacing: 1px;
+}
+
+.link-login:hover {
+	text-decoration: none;
+}
+
 .latency-holder {
 	padding: 20px;
 }

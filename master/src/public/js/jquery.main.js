@@ -3,8 +3,34 @@ jQuery(function() {
 	initTimeago();
 	$('[data-toggle="tooltip"]').tooltip();
 	initCustomForms();
+	initPageReload();
 });
 
+function initPageReload() {
+	$('#refreshSelect').on('change', function(e) {
+		let value = $(this).val();
+		let interval = value * 60000;
+		setCookie('refreshTime', value, 1);
+		setTimeout(function() {
+			location.reload();
+		}, interval);
+	});
+
+	if (getCookie('refreshTime')) {
+		let value = parseFloat(getCookie('refreshTime'));
+		$('#refreshSelect').val(value);
+		interval = value * 60000;
+		setTimeout(function() {
+			location.reload();
+		}, interval);
+
+	} else {
+		$('#refreshSelect').val(5);
+		setTimeout(function() {
+			location.reload();
+		}, 300000);
+	}	
+}
 
 function initPopup() {
 	$('#resultDataModal').on('show.bs.modal', function (event) {
@@ -1442,3 +1468,44 @@ function initCustomForms() {
 	}());
 
 }(jQuery, this));
+
+
+
+function setCookie(name, value, days) {
+    var expires;
+
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toGMTString();
+    } else {
+        expires = "";
+    }
+    document.cookie = encodeURIComponent(name) + "=" + encodeURIComponent(value) + expires + "; path=/";
+}
+
+function getCookie(name) {
+    var nameEQ = encodeURIComponent(name) + "=";
+    var ca = document.cookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) === ' ')
+            c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0)
+            return decodeURIComponent(c.substring(nameEQ.length, c.length));
+    }
+    return null;
+}
+
+function eraseCookie(name) {
+    createCookie(name, "", -1);
+}
+
+
+
+
+
+
+
+
+

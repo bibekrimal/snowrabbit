@@ -52,11 +52,15 @@ Not seen
 								<td class="text-right">
 									<div class="custom-form">
 										<select class="color-select">
-											<option value="maroon" class="select-maroon" selected><span class="sr-only">Maroon</span></option>
-											<option value="purple" class="select-purple"><span class="sr-only">Purple</span></option>
-											<option value="gunmetal" class="select-gunmetal"><span class="sr-only">gunmetal</span></option>
-											<option value="lavender" class="select-lavender"><span class="sr-only">lavender</span></option>
-											<option value="spanish-gray" class="select-spanish-gray"><span class="sr-only">spanish gray</span></option>
+<%  @colors.each do |color|
+      if p[:color] == color
+ %>
+										<option value="maroon" class="select-<%= color %>" selected><span class="sr-only"><%= color %></span></option>
+<% else %>
+										<option value="maroon" class="select-<%= color %>"><span class="sr-only"><%= color %></span></option>
+<%    end
+    end
+%>
 										</select>
 									</div>
 								</td>
@@ -72,15 +76,18 @@ Not seen
 				</section>
 
 
-<h2>Unregistered Probes</h2>
-<TABLE BORDER=1 WIDTH=75%>
-
-<TR>
-<TH>Site</TH>
-<TH>IP</TH>
-<TH>Secret</TH>
-<TH>Active</TH>
-</TR>
+				<section class="py-3">
+					<h3 class="h6 font-weight-bold text-center mb-3">Unregistered Probes</h3>
+                                        <table class="table table-sm small mb-0">
+                                                <thead>
+                                                        <tr>
+                                                                <th class="bg-light border-light">Site</th>
+                                                                <th class="text-right bg-light border-light">IP</th>
+                                                                <th class="text-right bg-light border-light">Secret</th>
+                                                                <th class="text-right bg-light border-light">Active</th>
+                                                        </tr>
+                                                </thead>
+                                                <tbody>
 
 <% @probes_unregistered.each do |p| %>
 <FORM ACTION="/register_probe" METHOD="POST">
@@ -93,16 +100,21 @@ Not seen
 </TR>
 </FORM>
 <% end %>
-</TABLE>
+						</tbody>
+					</table>
+				</section>
 
-<h2>Inactive Probes</h2>
-<TABLE BORDER=1 WIDTH=75%>
-
-<TR>
-<TH>Site</TH>
-<TH>IP</TH>
-<TH>Last Seen</TH>
-</TR>
+				<section class="py-3">
+					<h3 class="h6 font-weight-bold text-center mb-3">Inactive Probes</h3>
+					<table class="table table-sm small mb-0">
+						<thead>
+							<tr>
+								<th class="bg-light border-light">Site</th>
+								<th class="text-right bg-light border-light">IP</th>
+								<th class="text-right bg-light border-light">Last Seen</th>
+							</tr>
+						</thead>
+						<tbody>
 
 <% @probes_inactive.each do |p| %>
 <TR>
@@ -117,7 +129,13 @@ Not seen
 </TD>
 </TR>
 <% end %>
-</TABLE>
+						</tbody>
+					</table>
+				</section>
+			</div>
+		</main>
+	</div>
+</body>
+</html>
 
 
-</CENTER>

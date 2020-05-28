@@ -209,6 +209,9 @@ get '/list_probes' do
   @probes = DB_CONNECTION[:probes].where(active: 1)
   @probes_unregistered = DB_CONNECTION[:probes].where(active: 2)
   @probes_inactive = DB_CONNECTION[:probes].where(active: 0)
+  @colors = ['maroon', 'purple', 'gunmetal', 'lavender', 'spanish-gray']
+
+
   erb :list_probes
 end
 
