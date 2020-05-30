@@ -3,8 +3,75 @@ jQuery(function() {
 	initTimeago();
 	$('[data-toggle="tooltip"]').tooltip();
 	initCustomForms();
+	initPageReload();
+	initDataSubmit();
 });
 
+function initDataSubmit() {
+	let submitBtn = $('.btn-update');
+
+	submitBtn.on('click', function(e) {
+		e.preventDefault();
+		let button = $(this);
+		let baseUrl = '/admin/probe_update';
+		let row = button.closest('tr');
+
+                let newSite = row.find('input[name="site"]').val();
+		let newLocation = row.find('select[name="location"]').val();
+		let newDesc = row.find('input[name="description"]').val();
+		let newIp = row.find('input[name="ipAddr"]').val();
+		let newKey = row.find('input[name="secretKey"]').val();
+                let newColor = row.find('select[name="color"]').val();
+
+		$.ajax({
+			type: 'POST',
+			url: baseUrl,
+
+			data: {
+				site: newSite,
+				location: newLocation,
+				description: newDesc,
+				ipAddress: newIp,
+				secretKey: newKey,
+				color: newColor,
+			},
+
+			beforeSend: function(e) {
+				console.log(e);
+			},
+			success: function(response) {
+				console.log(response);
+			},
+		});
+
+	});
+}
+
+function initPageReload() {
+	$('#refreshSelect').on('change', function(e) {
+		let value = $(this).val();
+		let interval = value * 60000;
+		setCookie('refreshTime', value, 1);
+		setTimeout(function() {
+			location.reload();
+		}, interval);
+	});
+
+	if (getCookie('refreshTime')) {
+		let value = parseFloat(getCookie('refreshTime'));
+		$('#refreshSelect').val(value);
+		interval = value * 60000;
+		setTimeout(function() {
+			location.reload();
+		}, interval);
+
+	} else {
+		$('#refreshSelect').val(5);
+		setTimeout(function() {
+			location.reload();
+		}, 300000);
+	}	
+}
 
 function initPopup() {
 	$('#resultDataModal').on('show.bs.modal', function (event) {
@@ -1442,3 +1509,44 @@ function initCustomForms() {
 	}());
 
 }(jQuery, this));
+
+
+
+function setCookie(name, value, days) {
+    var expires;
+
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toGMTString();
+    } else {
+        expires = "";
+    }
+    document.cookie = encodeURIComponent(name) + "=" + encodeURIComponent(value) + expires + "; path=/";
+}
+
+function getCookie(name) {
+    var nameEQ = encodeURIComponent(name) + "=";
+    var ca = document.cookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) === ' ')
+            c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0)
+            return decodeURIComponent(c.substring(nameEQ.length, c.length));
+    }
+    return null;
+}
+
+function eraseCookie(name) {
+    createCookie(name, "", -1);
+}
+
+
+
+
+
+
+
+
+
