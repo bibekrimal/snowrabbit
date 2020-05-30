@@ -4,7 +4,48 @@ jQuery(function() {
 	$('[data-toggle="tooltip"]').tooltip();
 	initCustomForms();
 	initPageReload();
+	initDataSubmit();
 });
+
+function initDataSubmit() {
+	let submitBtn = $('.btn-update');
+
+	submitBtn.on('click', function(e) {
+		e.preventDefault();
+		let button = $(this);
+		let baseUrl = '/admin/probe_update';
+		let row = button.closest('tr');
+
+                let newSite = row.find('input[name="site"]').val();
+		let newLocation = row.find('select[name="location"]').val();
+		let newDesc = row.find('input[name="description"]').val();
+		let newIp = row.find('input[name="ipAddr"]').val();
+		let newKey = row.find('input[name="secretKey"]').val();
+                let newColor = row.find('select[name="color"]').val();
+
+		$.ajax({
+			type: 'POST',
+			url: baseUrl,
+
+			data: {
+				site: newSite,
+				location: newLocation,
+				description: newDesc,
+				ipAddress: newIp,
+				secretKey: newKey,
+				color: newColor,
+			},
+
+			beforeSend: function(e) {
+				console.log(e);
+			},
+			success: function(response) {
+				console.log(response);
+			},
+		});
+
+	});
+}
 
 function initPageReload() {
 	$('#refreshSelect').on('change', function(e) {

@@ -199,21 +199,33 @@ post '/send_metric' do
 end
 
 
-get '/list_metrics' do
-  @ping_metrics = DB_CONNECTION[:ping_metrics].limit(50).order(Sequel.desc(:timestamp)) 
-  erb :list_metrics
+get '/admin' do
+  erb :admin
 end
 
 
-get '/list_probes' do
+get '/admin/metric_list' do
+  @ping_metrics = DB_CONNECTION[:ping_metrics].limit(50).order(Sequel.desc(:timestamp)) 
+  erb :admin_metric_list
+end
+
+
+get '/admin/probe_list' do
   @probes = DB_CONNECTION[:probes].where(active: 1)
   @probes_unregistered = DB_CONNECTION[:probes].where(active: 2)
   @probes_inactive = DB_CONNECTION[:probes].where(active: 0)
   @colors = ['maroon', 'purple', 'gunmetal', 'lavender', 'spanish-gray']
+  @locations = ['US', 'EU', 'APAC']
 
-
-  erb :list_probes
+  erb :admin_probe_list
 end
+
+
+post '/admin/probe_update' do
+  puts "PROBE: #{params}"
+  'OK'
+end
+
 
 post '/get_probes' do
   probes = DB_CONNECTION[:probes].where(active: 1)
@@ -223,6 +235,7 @@ post '/get_probes' do
   end
   JSON.generate(probes_out)
 end
+
 
 post '/register_probe' do
   # register probe
@@ -235,6 +248,7 @@ post '/register_probe' do
   'Probe registered'
 end
 
+
 get '/matrix' do
   # Get all of the latest ping times and display
   @probes_list = DB_CONNECTION[:probes].where(active: 1).order(Sequel.desc(:location), Sequel.asc(:site))
@@ -246,6 +260,7 @@ get '/matrix' do
 
   erb :matrix
 end
+
 
 get '/site_details' do
   @source_site = params[:source_site]

@@ -171,6 +171,22 @@ body > .jcf-select-drop.jcf-drop-flipped {
 	font-size: 10px !important;
 }
 
+.btn.btn-update {
+	font-size: 10px;
+	padding: 3px 8px;
+}
+
+.btn-primary:focus,
+.btn-primary.focus {
+	box-shadow: none;
+}
+
+.btn-primary:not(:disabled):not(.disabled):active:focus,
+.btn-primary:not(:disabled):not(.disabled).active:focus,
+.show > .btn-primary.dropdown-toggle:focus {
+	box-shadow: none;
+}
+
 .close {
 	position: absolute;
 	top: 3px;
@@ -188,6 +204,39 @@ abbr[data-original-title] {
 	cursor: default;
 }
 
+.jcf-select {
+	margin-bottom: 0;
+	min-width: 70px;
+	border-color: #464d77;
+}
+
+.jcf-select .jcf-select-opener {
+	background: none;
+	width: auto;
+}
+
+.jcf-select .jcf-select-opener:after {
+	content: "";
+	position: absolute;
+	top: 5px;
+	right: 8px;
+	width: 8px;
+	height: 8px;
+	border-width: 2px 2px 0 0;
+	border-color: #464d77 #464d77 transparent transparent;
+	border-style: solid;
+	-webkit-transform: rotate(135deg);
+	-ms-transform: rotate(135deg);
+	transform: rotate(135deg);
+}
+
+.jcf-select .jcf-select-text {
+	text-align: left;
+	margin: 0 20px 0 8px;
+	line-height: 1.3846;
+	padding: 4px 0;
+}
+
 .jcf-select.jcf-select-color-select {
 	border: none;
 	margin-bottom: 0;
@@ -197,6 +246,7 @@ abbr[data-original-title] {
 
 .jcf-select.jcf-select-color-select .jcf-select-text {
 	margin: 0;
+	padding: 0;
 	height: 100%;
 	font-size: 0;
 	line-height: 0;
@@ -251,6 +301,14 @@ abbr[data-original-title] {
 	transform: rotate(135deg);
 }
 
+.jcf-select-drop .jcf-select-drop-content {
+	border-color: #464d77;
+}
+
+.jcf-select-drop .jcf-hover {
+	background: rgba(70, 77, 119, .1);
+}
+
 .jcf-select-drop.jcf-select-color-select .jcf-select-drop-content {
 	border: none;
 }
@@ -287,6 +345,11 @@ abbr[data-original-title] {
 
 .jcf-select-drop.jcf-select-color-select .jcf-list .jcf-option.jcf-selected {
 	display: none;
+}
+
+.table.middle-aligned-cell th,
+.table.middle-aligned-cell td {
+	vertical-align: middle;
 }
 
 #header {
@@ -499,6 +562,37 @@ abbr[data-original-title] {
 	bottom: 0;
 	left: 0;
 	right: 0;
+}
+
+.active-inactive-icon {
+	width: 25px;
+	display: block;
+	margin: 0 auto;
+}
+
+.active-inactive-icon img {
+	width: 100%;
+	height: auto;
+}
+
+.form-control {
+	border-color: rgba(70, 77, 119, .5);
+}
+
+.form-control:focus {
+	border-bottom-color: #464d77;
+}
+
+.desc-field {
+	max-width: 150px;
+}
+
+.ip-field {
+	max-width: 130px;
+}
+
+.key-field {
+	max-width: 170px;
 }
 
 body {
